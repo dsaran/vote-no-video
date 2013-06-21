@@ -1,0 +1,12 @@
+.movieArt {
+}
+
+.box-left {
+	float: left;
+	width: 50%;
+}
+
+.box-right {
+	float: right;
+	width: 50%;
+}

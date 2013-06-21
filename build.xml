@@ -1,0 +1,114 @@
+<project>
+
+	<property name="lib.dir" value="lib"/>
+	<property name="src.dir" value="src"/>
+	<property name="dist.dir" value="dist"/>
+	<property name="build.dir" value="build"/>
+	<property name="war.dir" value="${build.dir}/war"/>
+	<property name="webinf.dir" value="${war.dir}/WEB-INF"/>
+	<property name="classes.dir" value="${webinf.dir}/classes"/>
+	<property name="warlib.dir" value="${webinf.dir}/lib"/>
+	<property name="tomcat.deploy" value="/home/daniel/apache-tomcat-7.0.41/webapps"/>
+	<property name="test.lib.dir" value="test/lib"/>
+	<property name="test.src.dir" value="test/src"/>
+	<property name="test.dest.dir" value="build/test"/>
+
+	<path id="build.classpath">
+        <fileset dir="${lib.dir}">
+            <include name="**/*.jar" /> 
+        </fileset>
+    </path>
+
+	<target name="clean" description="Clean up build files">
+		<delete dir="build"/>
+	</target>
+	<target name="prepare">
+		<mkdir dir="build"/>
+		<mkdir dir="build/war"/>
+		<mkdir dir="${webinf.dir}"/>
+		<mkdir dir="${classes.dir}"/>
+		<mkdir dir="${warlib.dir}"/>
+		<mkdir dir="${dist.dir}"/>
+		<delete file="${dist.dir}/vote-no-video.war"/>
+	</target>
+
+	<target name="compile" depends="prepare">
+		<javac srcdir="${src.dir}" destdir="${classes.dir}"
+			encoding="iso-8859-1"
+			debug="true"
+			debuglevel="lines,vars,source">
+			<classpath refid="build.classpath"/>
+		</javac>
+	</target>
+
+	<target name="war" depends="compile" description="Create application war file">
+		<copy todir="${war.dir}">
+	        <fileset dir="WebContent"/>
+		</copy>
+		<copy todir="${warlib.dir}">
+	        <fileset dir="${lib.dir}">
+	            <include name="**/*.jar" /> 
+	        </fileset>
+		</copy>
+		<copy todir="${classes.dir}">
+	        <fileset dir="${src.dir}">
+	            <include name="*.xml" /> 
+	        </fileset>
+		</copy>
+		<!--
+		<copy todir="${webinf.dir}">
+			<fileset dir="WebContent/WEB-INF"/>
+		 </copy>
+			<metainf dir="WebContent/META-INF"/>
+			<webinf dir="${webinf.dir}"/>
+		-->
+
+		<war destfile="${dist.dir}/vote-no-video.war">
+			<fileset dir="${war.dir}"></fileset>
+		</war>
+	</target>
+
+	<target name="deploy" depends="war" description="Copy war file to tomcat deploy directory">
+	    <copy todir="${tomcat.deploy}">
+	        <fileset dir="${dist.dir}">
+	            <include name="vote-no-video.war"/>
+	        </fileset>
+	    </copy>
+	</target>	
+
+	<path id="test.build.classpath">
+		<path refid="build.classpath"/>
+        <fileset dir="${test.lib.dir}">
+            <include name="**/*.jar" /> 
+        </fileset>
+		<pathelement location="${classes.dir}"/>
+	</path>
+
+	<path id="test.run.classpath">
+		<path refid="test.build.classpath"/>
+		<pathelement location="${test.dest.dir}"/>
+		<pathelement location="${src.dir}"/>
+	</path>
+
+	<target name="compile-tests" depends="compile">
+		<mkdir dir="${test.dest.dir}"/>
+		<javac srcdir="${test.src.dir}" destdir="${test.dest.dir}"
+			encoding="iso-8859-1"
+			debug="true"
+			debuglevel="lines,vars,source">
+			<classpath refid="test.build.classpath"/>
+		</javac>
+	</target>
+
+	<target name="test" depends="compile-tests" description="Run unit tests">
+        <taskdef name="testng"
+            classname="org.testng.TestNGAntTask"
+        	classpath="${test.lib.dir}/testng-6.8.5.jar"
+        	/>
+
+        <testng classpathref="test.run.classpath"
+            haltOnfailure="true">
+            <xmlfileset dir="test" includes="testng_All.xml"/>
+        </testng>
+	</target>
+</project>
