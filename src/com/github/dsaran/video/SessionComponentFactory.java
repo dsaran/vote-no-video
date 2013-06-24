@@ -38,6 +38,7 @@ public class SessionComponentFactory implements ComponentFactory<Session> {
 
     @PostConstruct
     public void create() {
+    	LOGGER.debug("Creating session");
         this.session = SESSION_FACTORY.openSession();
     }
 
@@ -47,6 +48,7 @@ public class SessionComponentFactory implements ComponentFactory<Session> {
 
     @PreDestroy
     public void destroy() {
+    	LOGGER.debug("Destroying session");
         this.session.close();
     }
 

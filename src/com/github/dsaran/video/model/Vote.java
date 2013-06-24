@@ -18,6 +18,11 @@ public class Vote {
 	@ManyToOne
 	public Movie movie;
 
+	public Vote(User user, Movie movie) {
+		this.user = user;
+		this.movie = movie;
+	}
+
 	public Long getId() {
 		return id;
 	}

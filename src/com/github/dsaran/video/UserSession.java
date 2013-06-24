@@ -1,5 +1,6 @@
 package com.github.dsaran.video;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -11,7 +12,6 @@ import java.util.Set;
 import br.com.caelum.vraptor.ioc.SessionScoped;
 
 import com.github.dsaran.video.model.Movie;
-import com.github.dsaran.video.model.User;
 
 /**
  * This class is responsible for controlling the combinations of movies the user should be presented for voting.
@@ -31,13 +31,20 @@ public class UserSession {
 
 	private boolean initialized;
 
-	private User user;
+	private Long[] currentVote = null;
+	private List<Long> votes = new ArrayList<Long>(10);
+	private int totalSteps = 0;
+	private int currentStep = 0;
+	private Long userId;
 
 	/**
 	 * Load the available movies for voting.
 	 * @param movies
 	 */
-	public void initialize(User user, List<Movie> movies) {
+	public void initialize(List<Movie> movies) {
+		if (movies == null || movies.isEmpty()) {
+			return;
+		}
 		for (int i = 0; i < movies.size() - 1; i++) {
 			for (int j = i + 1; j < movies.size(); j++) {
 				Movie movie1 = movies.get(i);
@@ -46,9 +53,13 @@ public class UserSession {
 					combinations.put(movie1.getId(), new HashSet<Long>());
 				}
 				combinations.get(movie1.getId()).add(movie2.getId());
+				totalSteps++;
 			}
 		}
-		this.initialized = true;
+		currentStep = 0;
+		if (totalSteps > 0) {
+			this.initialized = true;
+		}
 	}
 
 	/**
@@ -60,6 +71,9 @@ public class UserSession {
 	}
 
 	public Long[] getNextVote() {
+		if (currentVote != null) {
+			return currentVote;
+		}
 		if (!combinations.isEmpty()) {
 			try {
 
@@ -70,19 +84,35 @@ public class UserSession {
 
 				Long id2 = set.iterator().next();
 
-				return new Long[] {id1, id2};
+				currentVote = new Long[] {id1, id2};
+				currentStep++;
+				return currentVote;
 
 			} catch (NoSuchElementException e) {}
 		}
 		return null;
 	}
 
-	public boolean markVoted(Long id1, Long id2) {
-		boolean marked = false;
+	/**
+	 * Register user vote.
+	 *
+	 * @param selected
+	 *            is the selected movie
+	 * @return {@code true} if it is a valid vote and it was registered successfully.
+	 */
+	public boolean registerVote(Long selected) {
+		if (currentVote == null || (!selected.equals(currentVote[0]) && !selected.equals(currentVote[1]))) {
+			return false;
+		}
+		boolean validVote = false;
+
+		Long id1 = currentVote[0];
+		Long id2 = currentVote[1];
+
         if (combinations.containsKey(id1)) {
         	Set<Long> items = combinations.get(id1);
         	if (items.contains(id2)) {
-        		marked = items.remove(id2);
+        		validVote = items.remove(id2);
         	}
     		if (items.isEmpty()) {
     			combinations.remove(id1);
@@ -90,17 +120,38 @@ public class UserSession {
         } else if (combinations.containsKey(id2)) {
         	Set<Long> items = combinations.get(id2);
         	if (items.contains(id1)) {
-        		marked = items.remove(id1);
+        		validVote = items.remove(id1);
 
         		if (items.isEmpty()) {
         			combinations.remove(id2);
         		}
         	}
         }
-        return marked;
+        if (validVote) {
+        	votes.add(selected);
+        	currentVote = null;
+        }
+        return validVote;
 	}
 
-	public User getUser() {
-		return user;
+	public int getCurrentStep() {
+		return currentStep;
 	}
+
+	public int getTotalSteps() {
+		return totalSteps;
+	}
+
+	public List<Long> getVotes() {
+		return votes;
+	}
+
+	public void serUserId(Long id) {
+		this.userId = id;
+	}
+
+	public Long getUserId() {
+		return userId;
+	}
+
 }

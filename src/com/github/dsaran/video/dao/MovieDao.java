@@ -36,20 +36,4 @@ public interface MovieDao {
 	 * @return the {@code Movie} for the given ID.
 	 */
 	Movie load(Long id);
-
-	/**
-	 * Persists a user into db.
-	 *
-	 * @param user
-	 *            is the user to persist.
-	 */
-	void save(User user);
-
-	/**
-	 * Persists a vote into db.
-	 *
-	 * @param vote
-	 *            is the vote to persist.
-	 */
-	void save(Vote vote);
 }

@@ -11,8 +11,6 @@ import br.com.caelum.vraptor.ioc.Component;
 
 import com.github.dsaran.video.exception.VideoRuntimeException;
 import com.github.dsaran.video.model.Movie;
-import com.github.dsaran.video.model.User;
-import com.github.dsaran.video.model.Vote;
 
 /**
  * DAO for Movie persistence
@@ -58,19 +56,5 @@ public class MovieDaoImpl implements MovieDao {
 	 */
 	public Movie load(Long id) {
 		return (Movie) session.load(Movie.class, id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public void save(User user) {
-		session.save(user);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public void save(Vote vote) {
-		session.save(vote);
 	}
 }

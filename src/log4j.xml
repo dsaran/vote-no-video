@@ -22,8 +22,8 @@
                 <appender-ref ref="stdout" />
         </category>
  
-        <rootLogger>
+        <root>
             <priority value="INFO" />
             <appender-ref ref="stdout" />
-        </rootLogger>
+        </root>
 </log4j:configuration>

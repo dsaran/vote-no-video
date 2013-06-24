@@ -68,6 +68,25 @@
 		</war>
 	</target>
 
+	<target name="deploy-light" depends="" description="Copy war file to tomcat deploy directory">
+	    <copy todir="${tomcat.deploy}/vote-no-video/WEB-INF/jsp" flatten="false">
+	        <fileset dir="WebContent/WEB-INF/jsp">
+	        </fileset>
+	    </copy>
+	    <copy todir="${tomcat.deploy}/vote-no-video/css" flatten="false">
+	        <fileset dir="WebContent/css">
+	        </fileset>
+	    </copy>
+	    <copy todir="${tomcat.deploy}/vote-no-video/js" flatten="false">
+	        <fileset dir="WebContent/js">
+	        </fileset>
+	    </copy>
+	    <copy todir="${tomcat.deploy}/vote-no-video/img" flatten="false">
+	        <fileset dir="WebContent/img">
+	        </fileset>
+	    </copy>
+	</target>
+
 	<target name="deploy" depends="war" description="Copy war file to tomcat deploy directory">
 	    <copy todir="${tomcat.deploy}">
 	        <fileset dir="${dist.dir}">

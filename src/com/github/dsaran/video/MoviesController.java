@@ -12,85 +12,49 @@ import br.com.caelum.vraptor.view.Results;
 
 import com.github.dsaran.video.dao.MovieDao;
 import com.github.dsaran.video.model.Movie;
-import com.github.dsaran.video.model.User;
-import com.github.dsaran.video.model.Vote;
 
 /**
- * Handles requests for index page.
+ * Handles vote requests.
  *
  * @author daniel
  */
 @Resource
-public class IndexController {
+public class MoviesController {
     /** The Logger. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(IndexController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MoviesController.class);
 
 	private final Result result;
 
 	private MovieDao movieDao;
 
-	private UserSession userSession;
-
-	public IndexController(UserSession userSession, MovieDao movieDao, Result result) {
-		this.userSession = userSession;
+	public MoviesController(MovieDao movieDao, Result result) {
 		this.result = result;
 		this.movieDao = movieDao;
 	}
 
 	/**
-	 * Will load two movies to present to user for voting.
-	 */
-	@Path("/")
-	public void index() {
-
-
-		if (!userSession.isInitialized()) {
-			List<Movie> movies = movieDao.loadAll();
-
-			User user = new User();
-			movieDao.save(user);
-
-			userSession.initialize(user, movies);
-		}
-		Long[] id = userSession.getNextVote();
-		if (id != null) {
-			result.include("movie1", movieDao.load(id[0]));
-			result.include("movie2", movieDao.load(id[1]));
-
-		} else {
-			result.use(Results.page()).redirectTo("/resultado");
-		}
-	}
-
-	/**
 	 * Display all available movies.
 	 */
-	@Path("/todos")
+	@Path("/filmes/todos")
 	public void list() {
 
 		List<Movie> movies = movieDao.loadAll();
 		result.include("list", movies);
 	}
 
-	@Path("/votar")
-	public void vote(VoteInfo vote) {
-
-		boolean marked = userSession.markVoted(vote.getMovie1(), vote.getMovie2());
-		if (marked) {
-			Vote userVote = new Vote();
-			userVote.setUser(userSession.getUser());
-			userVote.setMovie(movieDao.load(vote.getSelected()));
-
-			movieDao.save(userVote);
-		}
-		result.use(Results.page()).redirectTo("/");
-	}
-
 	/**
 	 * Insert data into DB.
 	 */
-	@Path("/cadastrar")
+	@Path("/filmes/cadastrar")
 	public void populate() {
+		LOGGER.debug("Populating movie DB");
+
+		addMovies();
+
+		result.use(Results.page()).redirectTo("/filmes/todos");
+	}
+
+	private void addMovies() {
 		Movie movie = new Movie();
 		movie.setName("Harry Potter E As Relíquias Da Morte - PARTE I");
 		movie.setDescription("Nesta primeira parte do filme, Harry (Daniel Radcliffe), Rony (Rupert Grint) e Hermione (Emma Watson) abandonam a Escola de Magia e Bruxaria de Hogwarts para buscar as Horcruxes - objetos que contêm pedaços da alma -, feitas por Voldemort, conforme indicado pelo diretor Alvo Dumbledore, antes deste morrer no longa anterior.");
@@ -125,7 +89,5 @@ public class IndexController {
 		movie.setImage("http://static.cineclick.com.br/sites/adm/uploads/banco_imagens/53/260x365_519eb87ad651d.jpg");
 
 		movieDao.save(movie);
-
-		result.use(Results.page()).redirectTo("/todos");
 	}
 }
